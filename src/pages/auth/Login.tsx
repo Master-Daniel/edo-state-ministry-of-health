@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react"
 import * as Yup from "yup";
 import { CircularProgress } from "@mui/material";
 import { useFormik } from "formik";
-import { useMutation } from 'react-query';
+import { useMutation } from "@tanstack/react-query";
 // import { useSearchParams, useRouter } from "next/navigation";
 // import { useDispatch } from "react-redux";
 import axiosInstance from "../../api/axiosConfig";
@@ -42,8 +42,9 @@ const Login: React.FC = () => {
         setPasswordVisible(!passwordVisible);
     };
 
-    const { mutate, isLoading } = useMutation<ResponseData, Error, Values>(login);
-
+    const { mutate, isPending } = useMutation<ResponseData, Error, Values>({
+        mutationFn: login,
+    });
     const validationSchema = Yup.object({
         email: Yup.string().email('Invalid email address').required("Email address is required"),
         password: Yup.string().required("Password is required"),
@@ -172,10 +173,10 @@ const Login: React.FC = () => {
                         {/* Login Button */}
                         <button
                             type="submit"
-                            disabled={!(formik.isValid && formik.dirty) || isLoading}
-                            className={`w-full rounded-md ${!(formik.isValid && formik.dirty) || isLoading ? `bg-[#AFAFAF] border border-bg-[#AFAFAF]` : `bg-green-700 hover:bg-green-800`} px-4 py-2 text-white transition`}
+                            disabled={!(formik.isValid && formik.dirty) || isPending}
+                            className={`w-full rounded-md ${!(formik.isValid && formik.dirty) || isPending ? `bg-[#AFAFAF] border border-bg-[#AFAFAF]` : `bg-green-700 hover:bg-green-800`} px-4 py-2 text-white transition`}
                         >
-                            {isLoading ? <CircularProgress size={20} color="inherit" /> : "Login"}
+                            {isPending ? <CircularProgress size={20} color="inherit" /> : "Login"}
                         </button>
                     </form>
 

@@ -4,7 +4,7 @@ import { RouterProvider } from "react-router-dom";
 import { Provider } from "react-redux";
 import { persistor, store } from './redux/store';
 import { PersistGate } from "redux-persist/integration/react";
-import { QueryClient, QueryClientProvider } from "react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import router from "./routes";
 import './index.css'
