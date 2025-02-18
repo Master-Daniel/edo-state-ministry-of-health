@@ -31,7 +31,9 @@ const ForgottenPassword: React.FC = () => {
         return await axiosInstance.post("/request-fpw-otp", values);
     };
 
-    const { mutate, isPending } = useMutation<ResponseData, Error, Values>(forgottenPassword);
+    const { mutate, isPending } = useMutation<ResponseData, Error, Values>({
+        mutationFn: forgottenPassword
+    });
 
     const validationSchema = Yup.object({
         email: Yup.string().email('Invalid email address').required("Email address is required")

@@ -32,7 +32,9 @@ const Verification: React.FC = () => {
         return await axiosInstance.post("/verify-fpw-otp", values);
     };
     
-    const { mutate, isPending } = useMutation<ResponseData, Error, Values>(verification);
+    const { mutate, isPending } = useMutation<ResponseData, Error, Values>({
+        mutationFn: verification
+    });
     
     const validationSchema = Yup.object({
         otp: Yup.number().required("otp is required")

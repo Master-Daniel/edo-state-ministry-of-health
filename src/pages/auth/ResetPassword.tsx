@@ -41,7 +41,9 @@ const ResetPassword: React.FC = () => {
         setConfirmPasswordVisible(!confirmPasswordVisible);
     };
 
-    const { mutate, isPending } = useMutation<ResponseData, Error, Values>(resetPassword);
+    const { mutate, isPending } = useMutation<ResponseData, Error, Values>({
+        mutationFn: resetPassword
+    });
 
     const validationSchema = Yup.object({
         password: Yup.string()

@@ -61,11 +61,13 @@ const ManagePassCodes: React.FC = () => {
     const totalPages = Math.ceil(evaluations.length / PAGE_SIZE);
     const displayedEvaluations = evaluations.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-    const login = async (values: Values): Promise<ResponseData> => {
+    const createPassCode = async (values: Values): Promise<ResponseData> => {
         return await axiosInstance.post("/login", values);
     };
 
-    const { mutate, isPending } = useMutation<ResponseData, Error, Values>(login);
+    const { mutate, isPending } = useMutation<ResponseData, Error, Values>({
+        mutationFn: createPassCode
+    });
 
     const formik = useFormik({
         initialValues: { department: '', passCode: '', confirmPassCode: '' },
