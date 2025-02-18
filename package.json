@@ -1,0 +1,45 @@
+{
+  "name": "edo_state_ministry_of_health",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^6.4.4",
+    "@mui/material": "^6.4.4",
+    "@reduxjs/toolkit": "^2.5.1",
+    "@tailwindcss/vite": "^4.0.6",
+    "axios": "^1.7.9",
+    "axios-rate-limit": "^1.4.0",
+    "formik": "^2.4.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-query": "^3.39.3",
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^7.1.5",
+    "redux-persist": "^6.0.0",
+    "sweetalert2": "^11.17.2",
+    "sweetalert2-react-content": "^5.1.0",
+    "tailwindcss": "^4.0.6",
+    "yup": "^1.6.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.19.0",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.19.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.18",
+    "globals": "^15.14.0",
+    "typescript": "~5.7.2",
+    "typescript-eslint": "^8.22.0",
+    "vite": "^6.1.0"
+  }
+}
