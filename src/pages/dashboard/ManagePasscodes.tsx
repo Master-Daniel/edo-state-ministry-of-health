@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
 import DashboardHeader from '../../components/DashboardHeader'
+import axiosInstance from '../../api/axiosConfig';
+
 import { Link } from 'react-router-dom';
 import { useFormik } from 'formik';
 import { CircularProgress } from '@mui/material';
-import axiosInstance from '../../api/axiosConfig';
-import { useMutation } from "react-query";
+import { useMutation } from "@tanstack/react-query";
 import * as Yup from 'yup';
 
 interface Values {
@@ -65,7 +66,7 @@ const ManagePassCodes: React.FC = () => {
         return await axiosInstance.post("/login", values);
     };
 
-    const { mutate, isLoading } = useMutation<ResponseData, Error, Values>({
+    const { mutate, isPending } = useMutation<ResponseData, Error, Values>({
         mutationFn: createPassCode
     });
 
@@ -135,13 +136,13 @@ const ManagePassCodes: React.FC = () => {
                         <div className="flex justify-end">
                             <button
                                 type="submit"
-                                disabled={!(formik.isValid && formik.dirty) || isLoading}
-                                className={`w-24 rounded-md ${!(formik.isValid && formik.dirty) || isLoading
+                                disabled={!(formik.isValid && formik.dirty) || isPending}
+                                className={`w-24 rounded-md ${!(formik.isValid && formik.dirty) || isPending
                                         ? 'bg-[#AFAFAF] border border-bg-[#AFAFAF]'
                                         : 'bg-green-700 hover:bg-green-800'
                                     } px-4 py-2 text-white transition`}
                             >
-                                {isLoading ? <CircularProgress size={20} color="inherit" /> : 'Login'}
+                                {isPending ? <CircularProgress size={20} color="inherit" /> : 'Login'}
                             </button>
                         </div>
                     </form>

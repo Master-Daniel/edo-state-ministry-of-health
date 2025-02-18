@@ -9,6 +9,8 @@ import Layout from "../pages/dashboard/Layout";
 import ManageEvaluations from "../pages/dashboard/ManageEvaluations";
 import ManagePassCodes from "../pages/dashboard/ManagePasscodes";
 import ViewSubmissions from "../pages/dashboard/ViewSubmissions";
+import Profile from "../pages/dashboard/Profile";
+import Settings from "../pages/dashboard/Settings";
 
 const router = createBrowserRouter([
     {
@@ -26,6 +28,8 @@ const router = createBrowserRouter([
                     { path: 'manage-evaluations', element: <ManageEvaluations /> },
                     { path: 'manage-passcodes', element: <ManagePassCodes /> },
                     { path: 'view-submissions', element: <ViewSubmissions /> },
+                    { path: 'profile', element: <Profile /> },
+                    { path: 'settings', element: <Settings /> },
                 ],
             },
             // { path: "*", element: <NotFound /> }, // Catch-all for unknown routes
