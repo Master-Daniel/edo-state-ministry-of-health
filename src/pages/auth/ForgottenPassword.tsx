@@ -6,25 +6,29 @@ import { CircularProgress } from "@mui/material";
 import { useFormik } from "formik";
 import { useMutation } from 'react-query';
 import { onErrorResponse, onSuccessResponse } from '../../utils/custom-functions';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { setResetPasswordData } from '../../redux/slices/globalSlice';
 
 interface Values {
     email: string;
-    password: string;
-    rememberMe: boolean;
 }
 
 interface ResponseData {
     status: boolean;
     data: {
-        token: string;
+        message: string;
     };
     timestamp: number;
 }
 
 const ForgottenPassword: React.FC = () => {
 
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
+
     const forgottenPassword = async (values: Values): Promise<ResponseData> => {
-        return await axiosInstance.post("/user/login", values);
+        return await axiosInstance.post("/request-fpw-otp", values);
     };
 
     const { mutate, isLoading } = useMutation<ResponseData, Error, Values>(forgottenPassword);
@@ -33,20 +37,17 @@ const ForgottenPassword: React.FC = () => {
         email: Yup.string().email('Invalid email address').required("Email address is required")
     })
 
-    const formik = useFormik({
+    const formik = useFormik<Values>({
         initialValues: {
             email: '',
-            password: '',
-            rememberMe: false
         },
         validationSchema,
-        onSubmit: values => {
+        onSubmit: (values) => {
+            dispatch(setResetPasswordData({ email: values.email }))
             mutate(values, {
                 onSuccess: ({ data }) => {
-                    console.log(data)
-                    onSuccessResponse("Login Successful");
-                    // dispatch(setUserData({ isLoggedIn: true, ...data.user }));
-                    // navigate.push(redirect ?? "/dashboard");
+                    onSuccessResponse(data.message);
+                    navigate('auth/verification');
                 },
                 onError: onErrorResponse,
             });
@@ -65,7 +66,7 @@ const ForgottenPassword: React.FC = () => {
                 </div>
 
                 <h2 className="mb-4 text-center text-xl font-semibold text-gray-900">
-                    Kindly enter your log in details.
+                    Forgotten Password?
                 </h2>
 
                 {/* Form */}
@@ -106,6 +107,9 @@ const ForgottenPassword: React.FC = () => {
                 {/* Footer */}
                 <div className="mt-6 text-center text-sm text-gray-500">
                     Powered by <span className="font-semibold text-purple-600">Radah Technologies</span>
+                </div>
+                <div className="mt-6 text-center text-sm text-gray-500">
+                    Back to <Link to="/" className="font-semibold text-green-600">Login</Link>
                 </div>
             </div>
         </div>

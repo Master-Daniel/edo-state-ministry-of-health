@@ -49,7 +49,7 @@ const Login: React.FC = () => {
         password: Yup.string().required("Password is required"),
     })
 
-    const formik = useFormik({
+    const formik = useFormik<Values>({
         initialValues: {
             email: '',
             password: '',
