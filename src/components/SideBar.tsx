@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import LogoutIcon from "@mui/icons-material/Logout";
 import CloseIcon from "@mui/icons-material/Close";
 import {
@@ -12,7 +12,8 @@ import {
 } from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../redux/store";
-import { setSideBarOpen } from "../redux/slices/globalSlice";
+import { setIsLoggedIn, setSideBarOpen } from "../redux/slices/globalSlice";
+import { deleteCookie, onSuccessResponse } from "../utils/custom-functions";
 
 const menuItems = [
     { path: "/dashboard", label: "Dashboard Overview", icon: <DashboardIcon /> },
@@ -25,7 +26,15 @@ const menuItems = [
 
 const SideBar: React.FC = () => {
     const dispatch = useDispatch()
+    const navigate = useNavigate()
     const { isSideBarOpen } = useSelector((state: RootState) => state.global)
+
+    const handleLogout = () => {
+        deleteCookie("edo-state-token")
+        dispatch(setIsLoggedIn(false))
+        onSuccessResponse('Logged Out Successfully')
+        navigate('/')
+    }
 
     return (
         <>
@@ -45,7 +54,7 @@ const SideBar: React.FC = () => {
                         </h2>
                     </div>
                     {/* Close Button (Visible only on mobile) */}
-                    <button title="close" type="button" onClick={() => dispatch(setSideBarOpen(false))} className="md:hidden text-gray-700">
+                    <button title="close" type="button" onClick={() => dispatch(setSideBarOpen(false))} className="md:hidden cursor-pointer text-gray-700">
                         <CloseIcon />
                     </button>
                 </div>
@@ -57,6 +66,7 @@ const SideBar: React.FC = () => {
                             <li key={path}>
                                 <NavLink
                                     to={path}
+                                    end
                                     onClick={() => dispatch(setSideBarOpen(false))} 
                                     className={({ isActive }) =>
                                         `p-2 flex items-center gap-2 rounded-md transition ${
@@ -72,7 +82,7 @@ const SideBar: React.FC = () => {
                 </nav>
 
                 {/* Logout Button */}
-                <button className="mt-auto flex items-center justify-center bg-green-900 text-white py-2 rounded-md">
+                <button type="button" onClick={handleLogout} className="cursor-pointer mt-auto flex items-center justify-center bg-green-900 text-white py-2 rounded-md">
                     <LogoutIcon className="mr-2" />
                     Logout
                 </button>
