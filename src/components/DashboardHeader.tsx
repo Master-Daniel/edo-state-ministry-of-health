@@ -8,9 +8,9 @@ const DashboardHeader: React.FC = () => {
     const dispatch = useDispatch()
 
     return (
-        <div className="flex justify-between items-center bg-white p-4 shadow-md sticky top-0 z-30">
+        <div className="flex justify-between items-center rounded-md bg-white p-4 shadow-md sticky top-0 z-30">
             <div className="flex items-center gap-4">
-                <button title="menu" className='text-gray-500 sm:hidden' onClick={() => dispatch(setSideBarOpen(true))} type='button'>
+                <button title="menu" className='text-gray-500 sm:hidden cursor-pointer' onClick={() => dispatch(setSideBarOpen(true))} type='button'>
                     <MenuOutlinedIcon />
                 </button>
                 <h1 className="text-xl font-semibold text-black">Welcome, Admin.</h1>
