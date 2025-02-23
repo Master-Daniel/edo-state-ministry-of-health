@@ -1,6 +1,7 @@
 import React from 'react'
-import { Link } from 'react-router-dom';
 import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
+
+import { Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setSideBarOpen } from '../redux/slices/globalSlice';
 
