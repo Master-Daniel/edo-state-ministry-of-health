@@ -195,8 +195,8 @@ const Login: React.FC = () => {
                     </form>
 
                     {/* Footer */}
-                    <div className="mt-6 text-center text-sm text-gray-500">
-                        Powered by <span className="font-semibold text-purple-600">Radah Technologies</span>
+                    <div className="mt-6 justify-center gap-2 text-center flex text-sm text-gray-500 tracking-widest">
+                        Powered by <img src="/assets/images/radah-logo.png" className="font-semibold w-20 h-6" alt="" />
                     </div>
                 </div>
 
