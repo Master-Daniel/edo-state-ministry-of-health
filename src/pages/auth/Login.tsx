@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from "react"
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 
 import * as Yup from "yup";
 import { CircularProgress } from "@mui/material";
 import { useFormik } from "formik";
 import { useMutation } from "@tanstack/react-query";
-// import { useSearchParams, useRouter } from "next/navigation";
-// import { useDispatch } from "react-redux";
-import axiosInstance from "../../api/axiosConfig";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import { useDispatch } from "react-redux";
 import { decryptStr, deleteCookie, getCookie, onErrorResponse, onSuccessResponse, setCookie } from "../../utils/custom-functions";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { setIsLoggedIn } from "../../redux/slices/globalSlice";
 
 interface Values {
     email: string;
@@ -20,6 +19,7 @@ interface Values {
 
 interface ResponseData {
     status: boolean;
+    message: string;
     data: {
         token: string;
     };
@@ -28,14 +28,20 @@ interface ResponseData {
 
 const Login: React.FC = () => {
 
-    // const dispatch = useDispatch();
-    // const searchParams = useSearchParams();
-    // const redirect = searchParams.get('redirect')
-    // const navigate = useRouter();
+    const dispatch = useDispatch();
+    const { redirect } = useParams();
+    const navigate = useNavigate();
     const [passwordVisible, setPasswordVisible] = useState(false);
 
     const login = async (values: Values): Promise<ResponseData> => {
-        return await axiosInstance.post("/login", values);
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/login`, {
+            body: JSON.stringify(values),
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        return await response.json();
     };
 
     const togglePasswordVisibility = () => {
@@ -59,9 +65,9 @@ const Login: React.FC = () => {
         validationSchema,
         onSubmit: values => {
             mutate(values, {
-                onSuccess: ({ data }) => {
-                    onSuccessResponse("Login Successful");
-                    setCookie("real-nap-token", data.token, 2);
+                onSuccess: ({ data, message }) => {
+                    onSuccessResponse(message);
+                    setCookie("edo-state-token", data.token, 2);
                     if (values.rememberMe) {
                         const encodedLogin = decryptStr(values.email);
                         const encodedPassword = decryptStr(values.password);
@@ -69,12 +75,12 @@ const Login: React.FC = () => {
                             login: encodedLogin,
                             password: encodedPassword,
                         };
-                        setCookie("edo-state-token", JSON.stringify(login), 720);
+                        setCookie("edo-state-login", JSON.stringify(login), 720);
                     } else {
                         deleteCookie("edo-state-token")
                     }
-                    // dispatch(setUserData({ isLoggedIn: true, ...data.user }));
-                    // navigate.push(redirect ?? "/dashboard");
+                    dispatch(setIsLoggedIn(true));
+                    navigate(redirect ?? "/dashboard");
                 },
                 onError: onErrorResponse,
             });
@@ -83,7 +89,7 @@ const Login: React.FC = () => {
 
     useEffect(() => {
         // document.title = `Login - ${process.env.APP_NAME}`;
-        const login = getCookie("edo-state-token");
+        const login = getCookie("edo-state-login");
         if (login) {
             try {
                 const loginData = JSON.parse(login);
@@ -123,6 +129,7 @@ const Login: React.FC = () => {
                                 name="email"
                                 id="email"
                                 type="email"
+                                defaultValue={formik.values.email}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
                                 placeholder="Enter your email"
@@ -140,6 +147,7 @@ const Login: React.FC = () => {
                                 <input
                                     name="password"
                                     id="password"
+                                    defaultValue={formik.values.password}
                                     type={passwordVisible ? "text" : "password"}
                                     onChange={formik.handleChange}
                                     onBlur={formik.handleBlur}
@@ -174,7 +182,7 @@ const Login: React.FC = () => {
                         <button
                             type="submit"
                             disabled={!(formik.isValid && formik.dirty) || isPending}
-                            className={`w-full rounded-md ${!(formik.isValid && formik.dirty) || isPending ? `bg-[#AFAFAF] border border-bg-[#AFAFAF]` : `bg-green-700 hover:bg-green-800`} px-4 py-2 text-white transition`}
+                            className={`w-full cursor-pointer rounded-md ${!(formik.isValid && formik.dirty) || isPending ? `bg-[#AFAFAF] border border-bg-[#AFAFAF]` : `bg-green-700 hover:bg-green-800`} px-4 py-2 text-white transition`}
                         >
                             {isPending ? <CircularProgress size={20} color="inherit" /> : "Login"}
                         </button>
