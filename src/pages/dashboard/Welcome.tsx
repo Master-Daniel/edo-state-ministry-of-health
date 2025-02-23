@@ -4,8 +4,16 @@ import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import ReorderOutlinedIcon from '@mui/icons-material/ReorderOutlined';
 import DashboardHeader from '../../components/DashboardHeader';
-import axiosInstance from '../../api/axiosConfig';
 import StatsCard from '../../components/StatsCard';
+import { useFetch } from '../../hooks/useFetch';
+
+interface Pagination {
+    currentPage: number;
+    perPage: number;
+    totalPages: number;
+    nextPageUrl: string | null;
+    prevPageUrl: string | null;
+}
 
 interface Evaluation {
     id: number;
@@ -17,11 +25,20 @@ interface Evaluation {
     percentage: number;
 }
 
+interface ApiResponse {
+    status: boolean;
+    data: {
+        data: Evaluation[];
+        pagination: Pagination;
+    };
+}
+
 const Welcome: React.FC = () => {
     const [activeTab, setActiveTab] = useState("recent");
     const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
     const [selected, setSelected] = useState<number[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
+    const [url, setUrl] = useState("");
     const [pagination, setPagination] = useState({
         currentPage: 1,
         perPage: 5,
@@ -30,34 +47,34 @@ const Welcome: React.FC = () => {
         prevPageUrl: null as string | null,
     });
 
+    const { data } = useFetch<ApiResponse>(url);
+
     const tabs = ["Recent", "Top Performing", "Unanswered", "Archived", "Graded"];
 
-    const fetchEvaluations = async (tab: string, page: number = 1) => {
-        try {
-            const url = `/evaluation/${tab}?page=${page}&perPage=${pagination.perPage}`;
-            const response = await axiosInstance.get(url);
-
-            if (response.data.status) {
-                const data = response.data.data;
-                setEvaluations(data.data);
-                setPagination({
-                    currentPage: parseInt(data.pagination.currentPage),
-                    perPage: parseInt(data.pagination.perPage),
-                    totalPages: data.pagination.totalPages,
-                    nextPageUrl: data.pagination.nextPageUrl,
-                    prevPageUrl: data.pagination.prevPageUrl,
-                });
-            }
-        } catch (error) {
-            console.error("Error fetching evaluations:", error);
-        }
+    const fetchEvaluations = (tab: string, page: number = 1) => {
+        const newUrl = `/eveluation/${tab}?page=${page}&perPage=${pagination.perPage}`;
+        if (newUrl !== url) setUrl(newUrl); // Only update if the URL actually changes
     };
 
+    useEffect(() => {
+        if (data) {
+            if (data.status) {
+                setEvaluations(data.data.data);
+                setPagination({
+                    currentPage: parseInt(data.data.pagination.currentPage.toString()),
+                    perPage: parseInt(data.data.pagination.perPage.toString()),
+                    totalPages: data.data.pagination.totalPages,
+                    nextPageUrl: data.data.pagination.nextPageUrl,
+                    prevPageUrl: data.data.pagination.prevPageUrl,
+                });
+            }
+        }
+    }, [data]);
 
     useEffect(() => {
         fetchEvaluations(activeTab);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [activeTab]);
 
     const filteredEvaluations = evaluations.filter(
         evalItem => evalItem.form_title.toLowerCase().includes(searchQuery.toLowerCase()) ||
