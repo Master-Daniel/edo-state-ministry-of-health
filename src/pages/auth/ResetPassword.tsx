@@ -1,28 +1,19 @@
-import React, { useState } from 'react'
-import axiosInstance from '../../api/axiosConfig';
+import React, { useEffect, useState } from 'react'
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 
 import * as Yup from "yup";
 import { CircularProgress } from "@mui/material";
 import { useFormik } from "formik";
-import { useMutation } from "@tanstack/react-query";
 import { onErrorResponse, onSuccessResponse } from '../../utils/custom-functions';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
+import { useFetch } from '../../hooks/useFetch';
 
 interface Values {
     password: string;
     confirm_password: string;
-}
-
-interface ResponseData {
-    status: boolean;
-    data: {
-        message: string;
-    };
-    timestamp: number;
 }
 
 const ResetPassword: React.FC = () => {
@@ -31,10 +22,7 @@ const ResetPassword: React.FC = () => {
     const isLoggedIn = useSelector((state: RootState) => state.global.isLoggedIn);
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
-
-    const resetPassword = async (values: Values): Promise<ResponseData> => {
-        return await axiosInstance.post("/reset-password", values);
-    };
+    const { data, loading, error, fetchData } = useFetch(null);
 
     const togglePasswordVisibility = () => {
         setPasswordVisible(!passwordVisible);
@@ -43,10 +31,6 @@ const ResetPassword: React.FC = () => {
     const toggleConfirmPasswordVisibility = () => {
         setConfirmPasswordVisible(!confirmPasswordVisible);
     };
-
-    const { mutate, isPending } = useMutation<ResponseData, Error, Values>({
-        mutationFn: resetPassword
-    });
 
     const validationSchema = Yup.object({
         password: Yup.string()
@@ -65,16 +49,28 @@ const ResetPassword: React.FC = () => {
             confirm_password: ''
         },
         validationSchema,
-        onSubmit: values => {
-            mutate(values, {
-                onSuccess: ({ data }) => {
-                    onSuccessResponse(data.message);
-                    navigate('/');
-                },
-                onError: onErrorResponse,
-            });
-        }
+        onSubmit: async (values) => {
+            if (loading) return;
+
+            try {
+                await fetchData("/reset-password", { method: "POST", body: JSON.stringify(values) });
+
+                if (error) {
+                    onErrorResponse({ message: error });
+                    return;
+                }
+            } catch (err) {
+                console.error("Forgot password error:", err);
+            }
+        },
     })
+
+    useEffect(() => {
+        if (data) {
+            onSuccessResponse(data.message);
+            navigate('/');
+        }
+    }, [data, navigate]);
 
     if (isLoggedIn) {
         return <Navigate to="/dashboard" replace />;
@@ -154,13 +150,13 @@ const ResetPassword: React.FC = () => {
                     {/* Submit Button */}
                     <button
                         type="submit"
-                        disabled={!(formik.isValid && formik.dirty) || isPending}
-                        className={`w-full rounded-md ${!(formik.isValid && formik.dirty) || isPending
+                        disabled={!(formik.isValid && formik.dirty) || loading}
+                        className={`w-full rounded-md ${!(formik.isValid && formik.dirty) || loading
                             ? `bg-[#AFAFAF] border border-bg-[#AFAFAF]`
                             : `bg-green-700 hover:bg-green-800`
                             } px-4 py-2 text-white transition`}
                     >
-                        {isPending ? <CircularProgress size={20} color="inherit" /> : "Request Reset"}
+                        {loading ? <CircularProgress size={20} color="inherit" /> : "Request Reset"}
                     </button>
                 </form>
 

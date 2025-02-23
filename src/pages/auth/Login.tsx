@@ -5,27 +5,12 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import * as Yup from "yup";
 import { CircularProgress } from "@mui/material";
 import { useFormik } from "formik";
-import { useMutation } from "@tanstack/react-query";
 import { useDispatch, useSelector } from "react-redux";
 import { decryptStr, deleteCookie, getCookie, onErrorResponse, onSuccessResponse, setCookie } from "../../utils/custom-functions";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { setIsLoggedIn } from "../../redux/slices/globalSlice";
 import { RootState } from "../../redux/store";
-
-interface Values {
-    email: string;
-    password: string;
-    rememberMe: boolean;
-}
-
-interface ResponseData {
-    status: boolean;
-    message: string;
-    data: {
-        token: string;
-    };
-    timestamp: number;
-}
+import { useFetch } from "../../hooks/useFetch";
 
 const Login: React.FC = () => {
 
@@ -34,60 +19,53 @@ const Login: React.FC = () => {
     const navigate = useNavigate();
     const isLoggedIn = useSelector((state: RootState) => state.global.isLoggedIn);
     const [passwordVisible, setPasswordVisible] = useState(false);
-
-    const login = async (values: Values): Promise<ResponseData> => {
-        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/login`, {
-            body: JSON.stringify(values),
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        })
-        return await response.json();
-    };
+    const { fetchData, loading } = useFetch(null);
 
     const togglePasswordVisibility = () => {
         setPasswordVisible(!passwordVisible);
     };
 
-    const { mutate, isPending } = useMutation<ResponseData, Error, Values>({
-        mutationFn: login,
-    });
     const validationSchema = Yup.object({
         email: Yup.string().email('Invalid email address').required("Email address is required"),
         password: Yup.string().required("Password is required"),
     })
 
-    const formik = useFormik<Values>({
+    const formik = useFormik({
         initialValues: {
             email: '',
             password: '',
             rememberMe: false
         },
         validationSchema,
-        onSubmit: values => {
-            mutate(values, {
-                onSuccess: ({ data, message }) => {
-                    onSuccessResponse(message);
-                    setCookie("edo-state-token", data.token, 2);
-                    if (values.rememberMe) {
-                        const encodedLogin = decryptStr(values.email);
-                        const encodedPassword = decryptStr(values.password);
-                        const login = {
-                            login: encodedLogin,
-                            password: encodedPassword,
-                        };
-                        setCookie("edo-state-login", JSON.stringify(login), 720);
-                    } else {
-                        deleteCookie("edo-state-token")
-                    }
-                    dispatch(setIsLoggedIn(true));
-                    navigate(redirect ?? "/dashboard");
-                },
-                onError: onErrorResponse,
+        onSubmit: async (values) => {
+            const { data, error } = await fetchData("/login", {
+                method: "POST",
+                body: JSON.stringify(values),
+                headers: { "Content-Type": "application/json" },
             });
-        }
-    })
+
+            if (error) {
+                onErrorResponse({ message: error });
+                return;
+            }
+
+            if (data) {
+                onSuccessResponse(data.message);
+                setCookie("edo-state-token", data.data.token, 2);
+                if (values.rememberMe) {
+                    const login = {
+                        login: decryptStr(values.email),
+                        password: decryptStr(values.password),
+                    };
+                    setCookie("edo-state-login", JSON.stringify(login), 720);
+                } else {
+                    deleteCookie("edo-state-token");
+                }
+                dispatch(setIsLoggedIn(true));
+                navigate(redirect ?? "/dashboard");
+            }
+        },
+    });
 
     useEffect(() => {
         // document.title = `Login - ${process.env.APP_NAME}`;
@@ -187,10 +165,10 @@ const Login: React.FC = () => {
                         {/* Login Button */}
                         <button
                             type="submit"
-                            disabled={!(formik.isValid && formik.dirty) || isPending}
-                            className={`w-full cursor-pointer rounded-md ${!(formik.isValid && formik.dirty) || isPending ? `bg-[#AFAFAF] border border-bg-[#AFAFAF]` : `bg-green-700 hover:bg-green-800`} px-4 py-2 text-white transition`}
+                            disabled={!(formik.isValid && formik.dirty) || loading}
+                            className={`w-full cursor-pointer rounded-md ${!(formik.isValid && formik.dirty) || loading ? `bg-[#AFAFAF] border border-bg-[#AFAFAF]` : `bg-green-700 hover:bg-green-800`} px-4 py-2 text-white transition`}
                         >
-                            {isPending ? <CircularProgress size={20} color="inherit" /> : "Login"}
+                            {loading ? <CircularProgress size={20} color="inherit" /> : "Login"}
                         </button>
                     </form>
 
