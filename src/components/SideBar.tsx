@@ -31,6 +31,7 @@ const SideBar: React.FC = () => {
 
     const handleLogout = () => {
         deleteCookie("edo-state-token")
+        dispatch(setSideBarOpen(false))
         dispatch(setIsLoggedIn(false))
         onSuccessResponse('Logged Out Successfully')
         navigate('/')
