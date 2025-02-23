@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react'
-import axiosInstance from '../api/axiosConfig';
 import ImportContactsOutlinedIcon from '@mui/icons-material/ImportContactsOutlined';
 import TrendingUpOutlinedIcon from '@mui/icons-material/TrendingUpOutlined';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
@@ -8,17 +7,36 @@ import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsAc
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../redux/store';
 import { setStats } from '../redux/slices/globalSlice';
+import { useFetch } from '../hooks/useFetch';
+
+interface distribution {
+    month: string;
+    average_percentage: number;
+    total_evaluation: number;
+}
+
+interface Stats {
+    total_evaluation: number;
+    new_evaluations: number;
+    average_score: number;
+    evaluated_centers: number;
+    monthly_evaluation_distribution: distribution[]
+}
+
+interface ApiResponse {
+    status: boolean;
+    data: Stats;
+}
 
 const StatsCard: React.FC = () => {
     const dispatch = useDispatch();
     const { stats } = useSelector((state: RootState) => state.global);
+    const { data } = useFetch<ApiResponse>('/dashboard/stats');
 
     useEffect(() => {
-        (async () => {
-            const { data } = await axiosInstance.get('/dashboard/stats');
-            dispatch(setStats(data));
-        })();
-    }, [dispatch]);
+        if (!data?.status) return;
+        dispatch(setStats(data.data));
+    }, [data, dispatch]);
 
     return (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
