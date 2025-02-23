@@ -6,10 +6,11 @@ import * as Yup from "yup";
 import { CircularProgress } from "@mui/material";
 import { useFormik } from "formik";
 import { useMutation } from "@tanstack/react-query";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { decryptStr, deleteCookie, getCookie, onErrorResponse, onSuccessResponse, setCookie } from "../../utils/custom-functions";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { setIsLoggedIn } from "../../redux/slices/globalSlice";
+import { RootState } from "../../redux/store";
 
 interface Values {
     email: string;
@@ -31,6 +32,7 @@ const Login: React.FC = () => {
     const dispatch = useDispatch();
     const { redirect } = useParams();
     const navigate = useNavigate();
+    const isLoggedIn = useSelector((state: RootState) => state.global.isLoggedIn);
     const [passwordVisible, setPasswordVisible] = useState(false);
 
     const login = async (values: Values): Promise<ResponseData> => {
@@ -102,6 +104,10 @@ const Login: React.FC = () => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    if (isLoggedIn) {
+        return <Navigate to="/dashboard" replace />;
+    }
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-gray-100 p-6">

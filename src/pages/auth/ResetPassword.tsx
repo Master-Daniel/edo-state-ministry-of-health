@@ -8,7 +8,9 @@ import { CircularProgress } from "@mui/material";
 import { useFormik } from "formik";
 import { useMutation } from "@tanstack/react-query";
 import { onErrorResponse, onSuccessResponse } from '../../utils/custom-functions';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../redux/store';
 
 interface Values {
     password: string;
@@ -26,6 +28,7 @@ interface ResponseData {
 const ResetPassword: React.FC = () => {
 
     const navigate = useNavigate()
+    const isLoggedIn = useSelector((state: RootState) => state.global.isLoggedIn);
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
 
@@ -72,6 +75,10 @@ const ResetPassword: React.FC = () => {
             });
         }
     })
+
+    if (isLoggedIn) {
+        return <Navigate to="/dashboard" replace />;
+    }
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-gray-100 p-6">

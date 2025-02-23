@@ -6,9 +6,10 @@ import { CircularProgress } from "@mui/material";
 import { useFormik } from "formik";
 import { useMutation } from "@tanstack/react-query";
 import { onErrorResponse, onSuccessResponse } from '../../utils/custom-functions';
-import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { setResetPasswordData } from '../../redux/slices/globalSlice';
+import { RootState } from '../../redux/store';
 
 interface Values {
     otp: string;
@@ -27,6 +28,7 @@ const Verification: React.FC = () => {
 
     const dispatch = useDispatch()
     const navigate = useNavigate()
+    const isLoggedIn = useSelector((state: RootState) => state.global.isLoggedIn);
 
     const verification = async (values: Values): Promise<ResponseData> => {
         return await axiosInstance.post("/verify-fpw-otp", values);
@@ -57,7 +59,10 @@ const Verification: React.FC = () => {
         }
     })
 
-    
+    if (isLoggedIn) {
+        return <Navigate to="/dashboard" replace />;
+    }
+
     return (
         <div className="flex min-h-screen items-center justify-center bg-gray-100 p-6">
             <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-lg">
