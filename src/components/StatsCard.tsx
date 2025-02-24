@@ -9,29 +9,10 @@ import { RootState } from '../redux/store';
 import { setStats } from '../redux/slices/globalSlice';
 import { useFetch } from '../hooks/useFetch';
 
-interface distribution {
-    month: string;
-    average_percentage: number;
-    total_evaluation: number;
-}
-
-interface Stats {
-    total_evaluation: number;
-    new_evaluations: number;
-    average_score: number;
-    evaluated_centers: number;
-    monthly_evaluation_distribution: distribution[]
-}
-
-interface ApiResponse {
-    status: boolean;
-    data: Stats;
-}
-
 const StatsCard: React.FC = () => {
     const dispatch = useDispatch();
     const { stats } = useSelector((state: RootState) => state.global);
-    const { data } = useFetch<ApiResponse>('/dashboard/stats');
+    const { data } = useFetch('/dashboard/stats');
 
     useEffect(() => {
         if (!data?.status) return;
