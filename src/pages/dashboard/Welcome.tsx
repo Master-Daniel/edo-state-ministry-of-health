@@ -6,14 +6,7 @@ import ReorderOutlinedIcon from '@mui/icons-material/ReorderOutlined';
 import DashboardHeader from '../../components/DashboardHeader';
 import StatsCard from '../../components/StatsCard';
 import { useFetch } from '../../hooks/useFetch';
-
-interface Pagination {
-    currentPage: number;
-    perPage: number;
-    totalPages: number;
-    nextPageUrl: string | null;
-    prevPageUrl: string | null;
-}
+import { Link } from 'react-router-dom';
 
 interface Evaluation {
     id: number;
@@ -23,14 +16,6 @@ interface Evaluation {
     facility_name: string;
     rating: string;
     percentage: number;
-}
-
-interface ApiResponse {
-    status: boolean;
-    data: {
-        data: Evaluation[];
-        pagination: Pagination;
-    };
 }
 
 const Welcome: React.FC = () => {
@@ -47,7 +32,7 @@ const Welcome: React.FC = () => {
         prevPageUrl: null as string | null,
     });
 
-    const { data } = useFetch<ApiResponse>(url);
+    const { data } = useFetch(url);
 
     const tabs = ["Recent", "Top Performing", "Unanswered", "Archived", "Graded"];
 
@@ -139,7 +124,7 @@ const Welcome: React.FC = () => {
                                         className="h-4 w-4 appearance-none border border-gray-400 rounded checked:border-green-600 checked:bg-transparent checked:[&:after]:content-['✔'] checked:[&:after]:text-green-600 checked:[&:after]:block checked:[&:after]:text-center checked:[&:after]:font-bold checked:[&:after]:leading-none"
                                     />
                                 </th>
-                                {["S/N", "Form Name", "Submitted By", "Date", "Rating", "Score"].map((head) => (
+                                {["S/N", "Form Name", "Submitted By", "Date", "Rating", "Score", "Action"].map((head) => (
                                     <th key={head} className="p-2 text-gray-700">
                                         {head}
                                     </th>
@@ -174,6 +159,9 @@ const Welcome: React.FC = () => {
                                         )}
                                     </td>
                                     <td className="p-2 text-black">{evalItem.percentage}%</td>
+                                    <td className="p-2 text-black">
+                                        <Link to="" className="text-green-900 font-bold">View Form</Link>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
