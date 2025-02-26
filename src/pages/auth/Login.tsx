@@ -41,7 +41,6 @@ const Login: React.FC = () => {
             const { data, error } = await fetchData("/login", {
                 method: "POST",
                 body: JSON.stringify(values),
-                headers: { "Content-Type": "application/json" },
             });
 
             if (error) {
