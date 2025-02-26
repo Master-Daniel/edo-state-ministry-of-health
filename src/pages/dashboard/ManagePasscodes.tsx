@@ -1,26 +1,25 @@
 import React, { useState } from 'react'
 import DashboardHeader from '../../components/DashboardHeader'
-import axiosInstance from '../../api/axiosConfig';
 
 import { Link } from 'react-router-dom';
 import { useFormik } from 'formik';
 import { CircularProgress } from '@mui/material';
-import { useMutation } from "@tanstack/react-query";
 import * as Yup from 'yup';
+import { useFetch } from '../../hooks/useFetch';
+import { onErrorResponse, onSuccessResponse } from '../../utils/custom-functions';
 
 interface Values {
-    department: string;
-    passCode: string;
-    confirmPassCode: string;
+    department_id: string;
+    name: string;
+    passcode: string;
+    passcode_confirmation: string;
 }
 
-interface ResponseData {
-    status: boolean;
-    data: {
-        token: string;
-    };
-    timestamp: number;
-}
+type Evaluation = {
+    department_id: string;
+    name: string;
+    passcode_date: string;
+};
 
 const Button: React.FC<{ label: string, isActive: boolean, onClick: () => void }> = ({ label, isActive, onClick }) => {
     return (
@@ -37,10 +36,10 @@ const Button: React.FC<{ label: string, isActive: boolean, onClick: () => void }
 const PAGE_SIZE = 5;
 
 const validationSchema = Yup.object({
-    department: Yup.string().required('Department is required'),
-    passCode: Yup.string().min(4, 'Passcode must be at least 4 characters').required('Passcode is required'),
-    confirmPassCode: Yup.string()
-        .oneOf([Yup.ref('passCode')], 'Passcodes must match')
+    name: Yup.string().required('Department is required'),
+    passcode: Yup.string().min(4, 'Passcode must be at least 4 characters').required('Passcode is required'),
+    passcode_confirmation: Yup.string()
+        .oneOf([Yup.ref('passcode')], 'Passcodes must match')
         .required('Confirm passcode is required')
 });
 
@@ -50,31 +49,41 @@ const ManagePassCodes: React.FC = () => {
     const [selectAll, setSelectAll] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
 
-    const evaluations = [...Array(8)].map((_, i) => ({
-        id: i + 1,
-        name: i % 2 === 0 ? "Health facility evaluation" : "Employee training quiz",
-        user: `User ${i + 1}`,
-        date: `0${i + 1}/Dec/2024`,
-        rating: (i % 5) + 1,
-        score: `${50 + i * 5}%`
-    }));
+    const initialState = {
+        text: 'Create',
+        url: "/department/store"
+    };
+    
+    const [action, setAction] = useState(initialState);
+    const { data, fetchData, loading } = useFetch('/departments');
+    const evaluations = data?.data || [];
 
     const totalPages = Math.ceil(evaluations.length / PAGE_SIZE);
     const displayedEvaluations = evaluations.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-    const createPassCode = async (values: Values): Promise<ResponseData> => {
-        return await axiosInstance.post("/login", values);
-    };
-
-    const { mutate, isPending } = useMutation<ResponseData, Error, Values>({
-        mutationFn: createPassCode
-    });
-
-    const formik = useFormik({
-        initialValues: { department: '', passCode: '', confirmPassCode: '' },
+    const formik = useFormik<Values>({
+        initialValues: { department_id: '', name: '', passcode: '', passcode_confirmation: '' },
         validationSchema,
-        onSubmit: values => {
-            mutate(values);
+        onSubmit: async (values) => {
+            const { data, error } = await fetchData(action.url, {
+                method: "POST",
+                body: JSON.stringify(values),
+            });
+
+            if (error) {
+                console.log(error);
+                
+                onErrorResponse({ message: error });
+                return;
+            }
+
+            if (data) {
+                formik.resetForm();
+                setAction(initialState);
+                setActiveBar('create')
+                fetchData('/departments')
+                onSuccessResponse(data.message);
+            }
         }
     });
 
@@ -90,31 +99,39 @@ const ManagePassCodes: React.FC = () => {
         if (selectAll) {
             setSelected([]);
         } else {
-            setSelected(evaluations.map((evalItem) => evalItem.id));
+            // setSelected(evaluations.map((evalItem) => evalItem.id));
         }
         setSelectAll(!selectAll);
     };
+
+    const handleEdit = (evalItem: string) => {
+        const item = evaluations.find((item: Evaluation) => item.department_id == evalItem)
+        formik.setFieldValue('department_id', evalItem)
+        formik.setFieldValue('name', item.name)
+        setAction({ text: 'Update', url: '/department/update' })
+        setActiveBar('update')
+    }
 
     return (
         <main className="flex-1 p-6 sm:ml-0 lg:ml-64">
             <DashboardHeader />
             <div className="flex flex-wrap gap-3 py-5">
-                {['create', 'edit'].map((tab) => (
+                {[action.text, 'edit'].map((tab) => (
                     <Button
                         key={tab}
                         label={tab.charAt(0).toUpperCase() + tab.slice(1)}
-                        isActive={activeBar === tab}
+                        isActive={activeBar.toLowerCase() == tab.toLowerCase()}
                         onClick={() => setActiveBar(tab)}
                     />
                 ))}
             </div>
-            {activeBar === 'create' ? (
+            {activeBar.toLowerCase() === 'create' || activeBar.toLowerCase() === 'update' ? ( 
                 <div className="bg-white p-5 rounded-md shadow w-full md:w-3/6">
                     <form onSubmit={formik.handleSubmit}>
-                        {(['department', 'passCode', 'confirmPassCode'] as const).map((field) => (
+                        {(['name', 'passcode', 'passcode_confirmation'] as const).map((field) => (
                             <div key={field} className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700">
-                                    {field === 'confirmPassCode' ? 'Confirm Passcode' : field.charAt(0).toUpperCase() + field.slice(1)}
+                                    {field === 'passcode_confirmation' ? 'Confirm Passcode' : field === 'name' ? 'Department' : field.charAt(0).toUpperCase() + field.slice(1)}
                                 </label>
                                 <input
                                     aria-label={field}
@@ -124,8 +141,8 @@ const ManagePassCodes: React.FC = () => {
                                     onBlur={formik.handleBlur}
                                     value={formik.values[field as keyof typeof formik.values]}
                                     className={`mt-1 w-full text-black rounded-md border px-3 py-2 ${formik.errors[field as keyof typeof formik.errors] && formik.touched[field as keyof typeof formik.touched]
-                                            ? 'border-red-500'
-                                            : 'border-gray-300'
+                                        ? 'border-red-500'
+                                        : 'border-gray-300'
                                         }`}
                                 />
                                 {formik.errors[field as keyof typeof formik.errors] && formik.touched[field as keyof typeof formik.touched] && (
@@ -133,16 +150,22 @@ const ManagePassCodes: React.FC = () => {
                                 )}
                             </div>
                         ))}
-                        <div className="flex justify-end">
+                        <div className={`flex justify-${action.text.toLowerCase() == 'create' ? 'end' : 'between'}`}>
+                            {
+                                action.text.toLowerCase() == 'update' && <Link to="#" onClick={() => {
+                                    setActiveBar('create')
+                                    setAction(initialState)
+                                }} className='text-green-700 font-semibold text-base'>Reset Form</Link>
+                            }
                             <button
                                 type="submit"
-                                disabled={!(formik.isValid && formik.dirty) || isPending}
-                                className={`w-24 rounded-md ${!(formik.isValid && formik.dirty) || isPending
-                                        ? 'bg-[#AFAFAF] border border-bg-[#AFAFAF]'
-                                        : 'bg-green-700 hover:bg-green-800'
+                                disabled={!(formik.isValid && formik.dirty) || loading}
+                                className={`w-24 cursor-pointer rounded-md ${!(formik.isValid && formik.dirty) || loading
+                                    ? 'bg-[#AFAFAF] border border-bg-[#AFAFAF]'
+                                    : 'bg-green-700 hover:bg-green-800'
                                     } px-4 py-2 text-white transition`}
                             >
-                                {isPending ? <CircularProgress size={20} color="inherit" /> : 'Login'}
+                                {loading ? <CircularProgress size={20} color="inherit" /> : action.text}
                             </button>
                         </div>
                     </form>
@@ -169,23 +192,23 @@ const ManagePassCodes: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {displayedEvaluations.map((evalItem, index) => (
-                                <tr key={evalItem.id} className="border-t bg-white border-gray-200">
+                            {displayedEvaluations.map((evalItem: Evaluation, index: number) => (
+                                <tr key={evalItem.department_id} className="border-t bg-white border-gray-200">
                                     <td className="p-2">
                                         <input
                                             aria-label="select"
                                             type="checkbox"
-                                            checked={selected.includes(evalItem.id)}
-                                            onChange={() => handleSelect(evalItem.id)}
+                                            checked={selected.includes(index)}
+                                            onChange={() => handleSelect(index)}
                                             className="h-4 w-4 appearance-none border border-gray-400 rounded checked:border-green-600 checked:bg-transparent checked:[&:after]:content-['✔'] checked:[&:after]:text-green-600 checked:[&:after]:block checked:[&:after]:text-center checked:[&:after]:font-bold checked:[&:after]:leading-none"
                                         />
                                     </td>
                                     <td className="p-2 text-[#3A3A3A]">{(currentPage - 1) * PAGE_SIZE + index + 1}</td>
                                     <td className="p-2 text-[#3A3A3A]">{evalItem.name}</td>
-                                    <td className="p-2 text-[#3A3A3A]">{evalItem.user}</td>
+                                    <td className="p-2 text-[#3A3A3A]">{evalItem.passcode_date}</td>
                                     <td className="p-2 text-[#3A3A3A] font-bold text-4xl">
                                         ........{' '}
-                                        <Link to="#" className="text-base text-green-900 font-semibold" onClick={() => { }}>
+                                        <Link to="#" onClick={() => handleEdit(evalItem.department_id)} className="text-base text-green-900 font-semibold">
                                             Edit
                                         </Link>
                                     </td>
