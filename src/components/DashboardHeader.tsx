@@ -20,7 +20,7 @@ const DashboardHeader: React.FC = () => {
             <div className="flex items-center space-x-4 sm:space-x-6">
                 <div className="hidden sm:flex space-x-4 items-center">
                     <Link to="" className="text-green-900 font-bold">Share Form</Link>
-                    <Link to="" className="bg-green-900 text-white px-4 py-2 rounded-md">Create Form</Link>
+                    <Link to="/form/create-form" className="bg-green-900 text-white px-4 py-2 rounded-md">Create Form</Link>
                 </div>
             </div>
         </div>

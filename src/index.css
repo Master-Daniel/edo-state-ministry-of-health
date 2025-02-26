@@ -14,3 +14,50 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+a{
+  text-decoration: none;
+}
+
+/* Hide the up and down arrows in number input */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield; /* Firefox */
+}
+
+ul{
+  padding: 0;
+}
+
+.add-component{
+  position: fixed;
+  top: 20%;
+  right: 10px;
+  width: auto;
+  z-index: 1222;
+  height: max-content;
+
+}
+
+.question-input{
+  border-width: 0px 0px 1px 0px !important;
+  background-color: #F7F7F7;
+  border-color: #000!important;
+  border-radius: 0;
+  padding: 1rem 0.5rem;
+}
+
+.fancy-input{
+  border-width: 0px 0px 1px 0px!important;
+}
+
+.point-input{
+  width: 58px;
+  height: 30px;
+  padding: .8rem;
+}
