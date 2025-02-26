@@ -24,8 +24,8 @@ const router = createBrowserRouter([
                 path: "dashboard",
                 element: <Layout />,
                 children: [
-                    { index: true, element: <Welcome /> },
-                    { path: 'manage-evaluations', element: <ManageEvaluations /> },
+                    { index: true, element: <ManageEvaluations /> },
+                    { path: 'manage-evaluations', element: <Welcome /> },
                     { path: 'manage-passcodes', element: <ManagePassCodes /> },
                     { path: 'view-submissions', element: <ViewSubmissions /> },
                     { path: 'profile', element: <Profile /> },
