@@ -11,6 +11,11 @@ import ManagePassCodes from "../pages/dashboard/ManagePasscodes";
 import ViewSubmissions from "../pages/dashboard/ViewSubmissions";
 import Profile from "../pages/dashboard/Profile";
 import Settings from "../pages/dashboard/Settings";
+import Create from "../pages/form/Create";
+import FormLayout from "../pages/form/FormLayout";
+import LoginPassCode from "../pages/form/LoginPasscode";
+import FormPreview from "../pages/form/FormPreview";
+import Submission from "../pages/form/Submission";
 
 const router = createBrowserRouter([
     {
@@ -30,6 +35,17 @@ const router = createBrowserRouter([
                     { path: 'view-submissions', element: <ViewSubmissions /> },
                     { path: 'profile', element: <Profile /> },
                     { path: 'settings', element: <Settings /> },
+                   
+                ],
+            },
+            {
+                path: "form",
+                element: <FormLayout />,
+                children: [
+                    { path: 'create-form', element: <Create /> },
+                    { path: 'passcode', element: <LoginPassCode /> },
+                    { path: 'preview', element: <FormPreview /> },
+                    { path: 'submission', element: <Submission /> },
                 ],
             },
             // { path: "*", element: <NotFound /> }, // Catch-all for unknown routes

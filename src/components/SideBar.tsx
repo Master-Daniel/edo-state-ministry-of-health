@@ -50,9 +50,9 @@ const SideBar: React.FC = () => {
                 <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                         <img src="/assets/images/logo.png" alt="Logo" className="w-12" />
-                        <h2 className="text-green-900 font-semibold">
+                        <h6 className="text-green-900 font-semibold">
                             Edo State <br /> Ministry of Health
-                        </h2>
+                        </h6>
                     </div>
                     {/* Close Button (Visible only on mobile) */}
                     <button title="close" type="button" onClick={() => dispatch(setSideBarOpen(false))} className="md:hidden cursor-pointer text-gray-700">
