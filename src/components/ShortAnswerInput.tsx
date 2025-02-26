@@ -9,7 +9,7 @@ const ShortAnswerInput: React.FC = () => {
         type="text"
         placeholder="Please input your answer"
         className="w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-green-600 focus:outline-none fancy-input"
-        disabled
+       
       />
     </div>
   );

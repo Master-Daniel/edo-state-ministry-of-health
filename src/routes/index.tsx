@@ -15,6 +15,7 @@ import Create from "../pages/form/Create";
 import FormLayout from "../pages/form/FormLayout";
 import LoginPassCode from "../pages/form/LoginPasscode";
 import FormPreview from "../pages/form/FormPreview";
+import Submission from "../pages/form/Submission";
 
 const router = createBrowserRouter([
     {
@@ -44,6 +45,7 @@ const router = createBrowserRouter([
                     { path: 'create-form', element: <Create /> },
                     { path: 'passcode', element: <LoginPassCode /> },
                     { path: 'preview', element: <FormPreview /> },
+                    { path: 'submission', element: <Submission /> },
                 ],
             },
             // { path: "*", element: <NotFound /> }, // Catch-all for unknown routes

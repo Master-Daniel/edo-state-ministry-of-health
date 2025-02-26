@@ -12,7 +12,7 @@ import options from "../../public/assets/icons/options.svg";
 import { useDispatch } from "react-redux";
 import MultipleChoiceInput from "./MultipleChoiceInput";
 
-const FormSection: React.FC<{ showPoints?: boolean }> = ({}) => {
+const FormSection: React.FC<{ id: string; onDelete: (id: string) => void }> = ({ id, onDelete }) => {
   const dispatch = useDispatch();
   const [selectedType, setSelectedType] = useState("");
   const [required, setRequired] = useState(false);
@@ -26,39 +26,11 @@ const FormSection: React.FC<{ showPoints?: boolean }> = ({}) => {
 
   const formik = useFormik({
     initialValues: {
-      email: "",
-      password: "",
-      rememberMe: false,
       questionType: "",
     },
     validationSchema,
     onSubmit: async (values) => {
-      const { data, error } = await fetchData("/login", {
-        method: "POST",
-        body: JSON.stringify(values),
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (error) {
-        onErrorResponse({ message: error });
-        return;
-      }
-
-      if (data) {
-        onSuccessResponse(data.message);
-        setCookie("edo-state-token", data.data.token, 2);
-        if (values.rememberMe) {
-          const login = {
-            login: decryptStr(values.email),
-            password: decryptStr(values.password),
-          };
-          setCookie("edo-state-login", JSON.stringify(login), 720);
-        } else {
-          deleteCookie("edo-state-token");
-        }
-        dispatch(setIsLoggedIn(true));
-        navigate(redirect ?? "/dashboard");
-      }
+      // Handle form submission
     },
   });
 
@@ -66,7 +38,7 @@ const FormSection: React.FC<{ showPoints?: boolean }> = ({}) => {
     setSelectedType(e.target.value);
   };
 
-  const requiredHandler = (e) => {
+  const requiredHandler = () => {
     setRequired(!required);
   };
 
@@ -82,11 +54,7 @@ const FormSection: React.FC<{ showPoints?: boolean }> = ({}) => {
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               placeholder="Question"
-              className={`question-input mt-1 w-full rounded-md border border-gray-300 px-3 py-3 text-gray-900 ${
-                formik.errors.email && formik.touched.email
-                  ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                  : "focus:border-green-600 focus:outline-none"
-              }`}
+              className="question-input mt-1 w-full rounded-md border border-gray-300 px-3 py-3 text-gray-900"
             />
           </div>
           <div className="col-md-4">
@@ -98,11 +66,7 @@ const FormSection: React.FC<{ showPoints?: boolean }> = ({}) => {
                 handleTypeChange(e);
               }}
               onBlur={formik.handleBlur}
-              className={`mt-1 w-full rounded-md border border-gray-300 px-3 py-3 text-gray-900 ${
-                formik.errors.questionType && formik.touched.questionType
-                  ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                  : "focus:border-green-600 focus:outline-none"
-              }`}
+              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-3 text-gray-900"
             >
               <option value="">--Question type--</option>
               <option value="short-answer">
@@ -128,14 +92,17 @@ const FormSection: React.FC<{ showPoints?: boolean }> = ({}) => {
         </div>
 
         <div className="w-full py-3 px-4 mt-4 flex justify-end gap-4">
-          <button className="text-white px-4 py-2 rounded-md flex items-center gap-2">
+          <button className="text-white px-4 py-2 rounded-5 flex justify-center items-center gap-2 hover:bg-gray-200 transition duration-300 ease-in-out">
             <img src={copy} alt="copy icon" className="ml-2" />
           </button>
-          <button className="text-white px-4 py-2 rounded-md flex items-center gap-2">
+          <button
+            className="text-white px-4 py-2 rounded-5 flex justify-center items-center gap-2 hover:bg-gray-200 transition duration-300 ease-in-out"
+            onClick={() => onDelete(id)}
+          >
             <img src={deleteIcon} alt="delete icon" className="ml-2" />
           </button>
-          <div className="d-flex  remember-switch">
-            <label className="d-flex  align-items-center">
+          <div className="d-flex remember-switch">
+            <label className="d-flex align-items-center">
               <span className="ml-2"> Required</span>
               <Switch
                 onChange={requiredHandler}
@@ -151,7 +118,7 @@ const FormSection: React.FC<{ showPoints?: boolean }> = ({}) => {
               />
             </label>
           </div>
-          <button className="text-white px-4 py-2 rounded-md flex items-center gap-2">
+          <button className="text-white px-4 py-2 rounded-5 flex justify-center items-center gap-2 hover:bg-gray-200 transition duration-300 ease-in-out">
             <img src={options} alt="options icon" className="ml-2" />
           </button>
         </div>

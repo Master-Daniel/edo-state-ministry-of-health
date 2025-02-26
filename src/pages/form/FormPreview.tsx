@@ -407,10 +407,10 @@ const FormPreview: React.FC = () => {
               </div>
             </div>
 
-            {/* submit Button */}
+            <Link to="/form/submission">
             <button
               type="submit"
-              disabled={!(formik.isValid && formik.dirty) || loading}
+              // disabled={!(formik.isValid && formik.dirty) || loading}
               className={`w-full cursor-pointer rounded-4 py-3 ${
                 !(formik.isValid && formik.dirty) || loading
                   ? `bg-[#00662D] border border-bg-[#00662D]`
@@ -423,6 +423,7 @@ const FormPreview: React.FC = () => {
                 "Submit"
               )}
             </button>
+            </Link>
           </form>
         </div>
       </div>

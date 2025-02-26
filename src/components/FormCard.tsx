@@ -1,25 +1,44 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import add from "../../public/assets/icons/add.svg";
 import FormSection from "./FormSection";
+import { onSuccessResponse } from "../utils/custom-functions";
 
 const FormCard: React.FC = () => {
   const dispatch = useDispatch();
-  const [sections, setSections] = useState([{ id: "section-0" }]); // Track sections with unique IDs
+  const navigate = useNavigate();
+
+  const [sections, setSections] = useState([{ id: "section-0" }]);
 
   const addSection = () => {
-    setSections([...sections, { id: `section-${sections.length}` }]); // Add a new section with a unique ID
+    setSections([...sections, { id: `section-${sections.length}` }]);
   };
 
+  const deleteSection = (id) => {
+      setSections(sections.filter(section => section.id !== id));
+    
+  };
+
+  
   const handleDragEnd = (result) => {
-    if (!result.destination) return; // If dropped outside, do nothing
+    if (!result.destination) return;
 
     const updatedSections = [...sections];
     const [movedSection] = updatedSections.splice(result.source.index, 1);
     updatedSections.splice(result.destination.index, 0, movedSection);
 
     setSections(updatedSections);
+  };
+
+  const handleSave = () => {
+     onSuccessResponse("Form Saved Successfully");
+
+     window.scrollTo({ top: 0, behavior: "smooth" });
+    setTimeout(() => {
+      navigate("/dashboard/view-submissions");
+    }, 2000);
   };
 
   return (
@@ -42,7 +61,7 @@ const FormCard: React.FC = () => {
                         {...provided.dragHandleProps}
                         className="mb-2 cursor-grab"
                       >
-                        <FormSection />
+                        <FormSection id={section.id} onDelete={deleteSection} />
                       </div>
                     )}
                   </Draggable>
@@ -54,7 +73,7 @@ const FormCard: React.FC = () => {
         </DragDropContext>
 
         <div className="flex justify-end my-5">
-          <button className="btn px-5 py-3 btn-success">Save</button>
+          <button onClick={handleSave} className="btn px-5 py-3 btn-success">Save</button>
         </div>
       </div>
 
