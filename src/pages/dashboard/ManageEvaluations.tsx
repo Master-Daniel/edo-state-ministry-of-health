@@ -1,58 +1,140 @@
-import React from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import DashboardHeader from '../../components/DashboardHeader'
 import StatsCard from '../../components/StatsCard';
 
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import { Chart, registerables, ChartOptions, Plugin } from 'chart.js';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../redux/store';
 
 Chart.register(...registerables);
 
+interface EvaluationData {
+    month: string;
+    average_percentage: number;
+    total_evaluation: number;
+}
+
+interface ChartData {
+    labels: string[];
+    datasets: {
+        label?: string;
+        borderColor?: string;
+        backgroundColor?: string[];
+        data: number[];
+        fill?: boolean;
+    }[];
+}
+
+const months: string[] = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+];
+
 const ManageEvaluations: React.FC = () => {
 
-    const lineData = {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    const { stats } = useSelector((state: RootState) => state.global);
+
+    // Memoize the monthly_evaluation_distribution data
+    const monthly_evaluation_distribution = useMemo((): EvaluationData[] => {
+        return stats?.monthly_evaluation_distribution || [];
+    }, [stats]);
+
+    const [lineData, setLineData] = useState<ChartData>({
+        labels: months,
         datasets: [
             {
-                label: '',
-                borderColor: 'red',
-                data: [20, 40, 30, 50, 80, 60, 90, 70, 85, 95, 100, 110],
+                label: "Average Percentage",
+                borderColor: "red",
+                data: Array(12).fill(0),
                 fill: false,
             },
             {
-                label: 'Dataset 2',
-                borderColor: 'blue',
-                data: [10, 30, 50, 20, 60, 90, 50, 80, 70, 110, 120, 130],
+                label: "Total Evaluations",
+                borderColor: "blue",
+                data: Array(12).fill(0),
                 fill: false,
             },
         ],
-    };
+    });
 
-    const barData = {
-        labels: ['July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-        datasets: [{
-            label: 'Monthly Data',
-            backgroundColor: ['#FAD02E', '#FF6384', '#36A2EB', '#4BC0C0', '#9966FF', '#C9CBCF'],
-            data: [50, 30, 40, 80, 60, 90],
-        }],
-    };
+    const [barData, setBarData] = useState<ChartData>({
+        labels: months.slice(6), // Last 6 months
+        datasets: [
+            {
+                label: "Monthly Data",
+                backgroundColor: ["#FAD02E", "#FF6384", "#36A2EB", "#4BC0C0", "#9966FF", "#C9CBCF"],
+                data: Array(6).fill(0),
+            },
+        ],
+    });
 
-    const doughnutData = {
-        labels: [],
-        datasets: [{
-            data: [1257, 432, 123],
-            backgroundColor: ['#4C83FF', '#6EE7B7', '#FF6384'],
-        }],
-    };
+    const [doughnutData, setDoughnutData] = useState<ChartData>({
+        labels: months,
+        datasets: [
+            {
+                data: Array(12).fill(0),
+                backgroundColor: ["#4C83FF", "#6EE7B7", "#FF6384"],
+            },
+        ],
+    });
 
-    const smallLineData = {
-        labels: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
-        datasets: [{
-            label: 'Weekly Data',
-            borderColor: '#36A2EB',
-            data: [2000, 3000, 2500, 4000, 4500, 3200, 2800],
-            fill: false,
-        }],
-    };
+    const [smallLineData, setSmallLineData] = useState<ChartData>({
+        labels: ["M", "T", "W", "T", "F", "S", "S"],
+        datasets: [
+            {
+                label: "Weekly Data",
+                borderColor: "#36A2EB",
+                data: Array(7).fill(0), // Default empty
+                fill: false,
+            },
+        ],
+    });
+
+    useEffect(() => {
+        if (!monthly_evaluation_distribution.length) return;
+
+        const averagePercentages: number[] = Array(12).fill(0);
+        const totalEvaluations: number[] = Array(12).fill(0);
+
+        monthly_evaluation_distribution.forEach(({ month, average_percentage, total_evaluation }) => {
+            const [monthName] = month.split(" "); // Extract month name
+            const index = months.indexOf(monthName); // Get index based on name
+
+            if (index !== -1) {
+                averagePercentages[index] = average_percentage;
+                totalEvaluations[index] = total_evaluation;
+            }
+        });
+
+        // Update Line Chart Data
+        setLineData((prev) => ({
+            ...prev,
+            datasets: [
+                { ...prev.datasets[0], data: averagePercentages },
+                { ...prev.datasets[1], data: totalEvaluations },
+            ],
+        }));
+
+        // Update Bar Chart Data (Last 6 months)
+        setBarData((prev) => ({
+            ...prev,
+            datasets: [{ ...prev.datasets[0], data: averagePercentages.slice(6) }],
+        }));
+
+        // Update Doughnut Chart Data (Using total evaluations)
+        setDoughnutData((prev) => ({
+            ...prev,
+            datasets: [{ ...prev.datasets[0], data: totalEvaluations }],
+        }));
+
+        // Update Small Line Chart Data (Weekly trend)
+        const weeklyData = totalEvaluations.slice(-7); // Last 7 months as weekly trend
+        setSmallLineData((prev) => ({
+            ...prev,
+            datasets: [{ ...prev.datasets[0], data: weeklyData.length === 7 ? weeklyData : Array(7).fill(0) }],
+        }));
+    }, [monthly_evaluation_distribution]);
 
     const doughnutOptions: ChartOptions<"doughnut"> = {
         maintainAspectRatio: false,
@@ -85,7 +167,6 @@ const ManageEvaluations: React.FC = () => {
             ctx.save();
         },
     };
-
 
     const barOptions = {
         maintainAspectRatio: false,
